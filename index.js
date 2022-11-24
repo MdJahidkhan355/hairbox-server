@@ -198,3 +198,67 @@ async function run() {
             const user = await usersCollection.findOne(query);
             res.send({ isAdmin: user?.role === 'admin' });
         })
+
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            console.log(user);
+            const result = await usersCollection.insertOne(user);
+            res.send(result);
+        })
+
+        app.put('/users/admin/:id', verifyJWT, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail };
+            const user = await usersCollection.findOne(query);
+
+            if (user?.role !== 'admin') {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    role: 'admin'
+                }
+            }
+
+            const result = await usersCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
+        });
+
+        app.get('/admin', verifyJWT, verifyAdmin, async (req, res) => {
+            const query = {};
+            const admin = await doctorsCollection.find(query).toArray();
+            res.send(admin);
+
+        })
+
+
+        app.post('/admin', verifyJWT, async (req, res) => {
+            const admin = req.body;
+            const result = await doctorsCollection.insertOne(admin);
+            res.send(result);
+        })
+
+        app.delete('/admin/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await adminCollection.deleteOne(filter);
+            res.send(result);
+
+        })
+
+    }
+    finally {
+
+    }
+}
+run().catch(console.log);
+
+app.get('/', async (req, res) => {
+    res.send('hairsallon portal server is running');
+})
+
+app.listen(port, () => console.log(`hairsallon portal running ${port}`))
