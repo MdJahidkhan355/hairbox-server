@@ -122,32 +122,6 @@ async function run() {
             res.send(result);
         })
 
-        /**
-         * API naming convention
-         * bookings
-         * app.get('/bookings')
-         * app.get('/booking/:id')
-         * app.post('/bookings')
-         * app.patch('/bookings/:id')
-         * app.delete('/bookings/:id')
-         */
-
-        app.get('/bookings', verifyJWT, async (req, res) => {
-            const email = req.query.email;
-            console.log('token', req.headers.authorization);
-            const decodedEmail = req.decoded.email;
-
-            if (email !== decodedEmail) {
-                return res.status(403).send({ message: 'forbidden access' });
-            }
-
-            const query = { email: email };
-
-            const bookings = await bookingsCollection.find(query).toArray();
-            res.send(bookings);
-
-        })
-
 
 
         app.post('/bookings', async (req, res) => {
